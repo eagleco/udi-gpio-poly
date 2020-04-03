@@ -56,8 +56,9 @@
 	<nodeDef id="GPIO_1WTEMP" nls="TEMP">
         <editors />
         <sts>
-            <st id="ST" editor="TEMPF" />
-	    <st id="GV0" editor="TEMPC" />
+	    <st id="ST" editor="BOOL" />
+            <st id="GV0" editor="TEMPF" />
+	    <st id="GV1" editor="TEMPC" />
         </sts>
         <cmds>
             <sends>
