@@ -320,15 +320,16 @@ class OneWireTemp(polyinterface.Node):
     def __init__(self, controller, primary, address, name, tid):
         super().__init__(controller, primary, address, name)
         self.tid = tid
-        self.degF = None
-        self.degC = None
+        self.degF = 0
+        self.degC = 0
         self.deadband = 0.25
 
     def start(self):
         self.updateInfo()
 
     def updateInfo(self):
-        with open(tid, 'r') as f:
+        LOGGER.debug('updating {}'.format(self.tid))
+        with open(self.tid, 'r') as f:
             lines = f.readlines()
             if lines[0].strip()[-3:] != 'YES': #one retry if first failed
                 time.sleep(.2)
@@ -337,11 +338,11 @@ class OneWireTemp(polyinterface.Node):
             LOGGER.debug('temperature read failure {}'.format(lines[0]))
             self.setDriver('ST',0)
         else:
-            equalspos = lines[1].find('t=')
+            equals_pos = lines[1].find('t=')
             if equals_pos != -1:
                 self.setDriver('ST',1)
                 temp_string = lines[1][equals_pos+2:]
-                temp_c = float(tempstring) / 1000.0
+                temp_c = float(temp_string) / 1000.0
                 temp_f = temp_c * 1.8 + 32
                 if(abs(temp_f - self.degF) > self.deadband):
                     self.degF = temp_f
