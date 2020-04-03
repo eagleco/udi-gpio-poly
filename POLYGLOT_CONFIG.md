@@ -9,10 +9,12 @@
 
 >The second numbering system is the BCM numbers. This is a lower level way of working - it refers to the channel numbers on the Broadcom SOC. You have to always work with a diagram of which channel number goes to which pin on the RPi board. Your script could break between revisions of Raspberry Pi boards.
 
+- To enable temperature measuring of DS18B20 1 Wire Temperature Sensors:
+    - key = 1W_PIN
+    - Valid values: any GPIO pin # that can be used for 1 wire protocol. Use BCM numbering
+
 #### For more pinout information:
 - <https://www.raspberrypi.org/documentation/usage/gpio/>
 - <https://pinout.xyz/pinout/wiringpi>
 
-- To enable temperature measuring of DS18B20 1 Wire Temperature Sensors:
-    - key = 1W_PIN
-    - Valid values: any GPIO pin # that can be used for 1 wire protocol. Use BCM numbering
+
