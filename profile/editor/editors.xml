@@ -17,4 +17,10 @@
     <editor id="DBNC">
         <range uom="42" min="50" max="1000" step="50" />
     </editor>
+    <editor id="TEMPF">
+        <range uom="17" />
+    </editor>
+    <editor id="TEMPC">
+        <range uom="4" />
+    </editor>
 </editors>
