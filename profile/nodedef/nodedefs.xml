@@ -57,7 +57,7 @@
         <editors />
         <sts>
             <st id="ST" editor="TEMPF" />
-			<st id="GV0" editor="TEMPC" />
+	    <st id="GV0" editor="TEMPC" />
         </sts>
         <cmds>
             <sends>
