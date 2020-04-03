@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import polyinterface
-import sys
+import sys, os
 import RPi.GPIO as GPIO
+import glob #for finding temp sensors
 #import signal
 
 # These are physical PIN number
@@ -12,7 +13,7 @@ GPIO_PINS = [3,5,7,8,10,11,12,13,15,16,18,19,21,22,23,24,26,29,31,32,33,35,36,37
 GPIO_PORTS = [2,3,4,17,27,22,10,9,11,5,6,13,19,26,14,15,18,23,24,25,8,7,12,16,20,21]
 
 # GPIO port mode dictionary
-PORT_MODE = {0: 'GPIO.OUT', 1: 'GPIO.IN', 40: 'GPIO.SERIAL', 
+PORT_MODE = {0: 'GPIO.OUT', 1: 'GPIO.IN', 40: 'GPIO.SERIAL',
              41: 'GPIO.SPI', 42: 'GPIO.I2C', 43: 'GPIO.HARD_PWM', -1: 'GPIO.UNKNOWN'}
 
 LOGGER = polyinterface.LOGGER
@@ -26,6 +27,7 @@ class Controller(polyinterface.Controller):
         self.name = 'GPIO Header'
         self.address = 'rpigpiohdr'
         self.primary = self.address
+        self.w1pin = None
 
     def start(self):
         LOGGER.info('Started GPIO Pin controller')
@@ -40,7 +42,7 @@ class Controller(polyinterface.Controller):
     def shortPoll(self):
         for node in self.nodes:
             self.nodes[node].updateInfo()
-            
+
     def updateInfo(self):
         pass
 
@@ -50,10 +52,23 @@ class Controller(polyinterface.Controller):
 
     def discover(self, command=None):
         for i in GPIO_PINS:
+            if i == self.w1pin: continue #skip IO pin setup if it's used for 1wire
             address = 'gpiopin'+str(i)
             name = 'Pin '+str(i)
             if not address in self.nodes:
                 self.addNode(GPIOpin(self, self.address, address, name, i))
+
+        if self.w1pin is not None:
+            os.system('sudo dtoverlay w1-gpio gpiopin=' + str(self.w1pin) + ' pullup=0')
+            #use glob to find ds18b20's
+            folders = glob.glob('/sys/bus/w1/devices/28*')
+            for f in folders:
+                address = 'temp_'+f[-12:]
+                name = "Temp "+f[-7:]
+                tid = f+'/w1_slave'
+                if not address in self.nodes:
+                    self.addNode(OneWireTemp(self,self.address, address, name, tid))
+
 
     def check_params(self, command=None):
         # Going to try to gracefull allow user to select GPIO Mode, using customParams
@@ -73,6 +88,11 @@ class Controller(polyinterface.Controller):
         GPIO.setmode(GPIO_MODE)
         mode = format(GPIO_MODE)
         LOGGER.debug('GPIO mode set - ' + mode)
+
+        if '1W_PIN' in self.polyConfig['customParams']:
+            self.w1pin = self.polyConfig['customParams']['1W_PIN']
+            LOGGER.debug('Found 1 wire parameter, using pin ' + str(self.w1pin))
+
 
     id = 'GPIO_HDR'
     commands = {'DISCOVER': discover}
@@ -296,11 +316,58 @@ class GPIOpin(polyinterface.Node):
                     'PWM': setPWM, 'SET_DBNC': setDebounce
                }
 
+class OneWireTemp(polyinterface.Node):
+    def __init__(self, controller, primary, address, name, tid):
+        super().__init__(controller, primary, address, name)
+        self.tid = tid
+        self.degF = None
+        self.degC = None
+        self.deadband = 0.25
+
+    def start(self):
+        self.updateInfo()
+
+    def updateInfo(self):
+        with open(tid, 'r') as f:
+            lines = f.readlines()
+            if lines[0].strip()[-3:] != 'YES': #one retry if first failed
+                time.sleep(.2)
+                lines = f.readlines()
+        if lines[0].strip()[-3:] != 'YES':
+            LOGGER.debug('temperature read failure {}'.format(lines[0]))
+            self.setDriver('ST',0)
+        else:
+            equalspos = lines[1].find('t=')
+            if equals_pos != -1:
+                self.setDriver('ST',1)
+                temp_string = lines[1][equals_pos+2:]
+                temp_c = float(tempstring) / 1000.0
+                temp_f = temp_c * 1.8 + 32
+                if(abs(temp_f - self.degF) > self.deadband):
+                    self.degF = temp_f
+                    self.degC = temp_c
+                    self.setDriver('GV0',self.degF)
+                    self.setDriver('GV1',self.degC)
+            else:
+                LOGGER.debug('temperature read failure {}'.format(lines[1]))
+
+    def query(self, command=None):
+        self.updateInfo()
+        self.reportDrivers() # comes from polyinterface.Node class?
+
+    drivers = [{'driver': 'ST', 'value': 0, 'uom': 2},
+               {'driver': 'GV0', 'value': 0, 'uom': 17},
+               {'driver': 'GV1', 'value': 0, 'uom': 4}
+              ]
+    id = 'GPIO_1WTEMP' #matches id in nodedefs
+    commands = {
+                    'QUERY': query
+               }
+
 #def signal_term_handler(signal, frame):
 #    LOGGER.warning('Got SIGTERM, exiting...')
 #    GPIO.cleanup()
 #    sys.exit(0)
-
 
 if __name__ == "__main__":
 #    signal.signal(signal.SIGTERM, signal_term_handler)
