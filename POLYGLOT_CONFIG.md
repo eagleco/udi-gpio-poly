@@ -1,5 +1,5 @@
 ## Configuration and setup
-- Currently the only Custom Configuration Parameter to set:
+- To set pin addressing scheme:
     - key = GPIO_MODE
     - Valid "values": GPIO.BCM or GPIO.BOARD (default = GPIO.BOARD if nothing specified)
     - Must do a manual restart of GPIO node server after making changes.
@@ -12,3 +12,7 @@
 #### For more pinout information:
 - <https://www.raspberrypi.org/documentation/usage/gpio/>
 - <https://pinout.xyz/pinout/wiringpi>
+
+- To enable temperature measuring of DS18B20 1 Wire Temperature Sensors:
+    - key = 1W_PIN
+    - Valid values: any GPIO pin # that can be used for 1 wire protocol. Use BCM numbering
