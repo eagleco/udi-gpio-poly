@@ -4,6 +4,12 @@ ND-GPIO_HDR-ICON = GenericCtl
 CMD-HDR-DISCOVER-NAME = Re-Discover
 ST-HDR-ST-NAME = NodeServer Online
 
+# 1W Temperature
+ND-GPIO_PIN-NAME = Temp Input
+ND-GPIO_PIN-ICON = Input
+ST-PIN-ST-NAME = DegF
+ST-PIN-GV0-NAME = DegC
+
 # gpio pin
 ND-GPIO_PIN-NAME = GPIO Pin
 ND-GPIO_PIN-ICON = Output
