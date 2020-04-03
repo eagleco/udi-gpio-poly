@@ -53,4 +53,20 @@
             </accepts>
         </cmds>
     </nodeDef>
+	<nodeDef id="GPIO_1WTEMP" nls="TEMP">
+        <editors />
+        <sts>
+            <st id="ST" editor="TEMPF" />
+			<st id="GV0" editor="TEMPC" />
+        </sts>
+        <cmds>
+            <sends>
+                <cmd id="DON" />
+                <cmd id="DOF" />
+            </sends>
+            <accepts>
+                <cmd id="QUERY" />
+            </accepts>
+        </cmds>
+    </nodeDef>
 </nodeDefs>
