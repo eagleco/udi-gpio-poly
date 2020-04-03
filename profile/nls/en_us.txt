@@ -6,7 +6,7 @@ ST-HDR-ST-NAME = NodeServer Online
 
 # 1W Temperature
 ND-GPIO_PIN-NAME = Temp Input
-ND-GPIO_PIN-ICON = Input
+ND-GPIO_PIN-ICON = TempSensor
 ST-PIN-ST-NAME = DegF
 ST-PIN-GV0-NAME = DegC
 
