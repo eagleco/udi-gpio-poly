@@ -5,10 +5,11 @@ CMD-HDR-DISCOVER-NAME = Re-Discover
 ST-HDR-ST-NAME = NodeServer Online
 
 # 1W Temperature
-ND-GPIO_PIN-NAME = Temp Input
-ND-GPIO_PIN-ICON = TempSensor
-ST-PIN-ST-NAME = DegF
-ST-PIN-GV0-NAME = DegC
+ND-GPIO_1WTEMP-NAME = Temp Input
+ND-GPIO_1WTEMP-ICON = TempSensor
+ST-TEMP-ST-NAME = Responding
+ST-TEMP-GV0-NAME = DegF
+ST-TEMP-GV1-NAME = DegC
 
 # gpio pin
 ND-GPIO_PIN-NAME = GPIO Pin
