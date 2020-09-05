@@ -40,6 +40,7 @@ class Controller(polyinterface.Controller):
         GPIO.cleanup()
 
     def shortPoll(self):
+        LOGGER.debug('short polling')
         for node in self.nodes:
             self.nodes[node].updateInfo()
 
@@ -63,7 +64,7 @@ class Controller(polyinterface.Controller):
             #use glob to find ds18b20's
             folders = glob.glob('/sys/bus/w1/devices/28*')
             for f in folders:
-                address = 'temp_'+f[-12:]
+                address = 't'+f[-7:]
                 name = "Temp "+f[-7:]
                 tid = f+'/w1_slave'
                 if not address in self.nodes:
@@ -328,7 +329,7 @@ class OneWireTemp(polyinterface.Node):
         self.updateInfo()
 
     def updateInfo(self):
-        LOGGER.debug('updating {}'.format(self.tid))
+        #LOGGER.debug('updating {}'.format(self.tid))
         with open(self.tid, 'r') as f:
             lines = f.readlines()
             if lines[0].strip()[-3:] != 'YES': #one retry if first failed
@@ -345,8 +346,8 @@ class OneWireTemp(polyinterface.Node):
                 temp_c = float(temp_string) / 1000.0
                 temp_f = temp_c * 1.8 + 32
                 if(abs(temp_f - self.degF) > self.deadband):
-                    self.degF = temp_f
-                    self.degC = temp_c
+                    self.degF = round(temp_f,1)
+                    self.degC = round(temp_c,1)
                     self.setDriver('GV0',self.degF)
                     self.setDriver('GV1',self.degC)
             else:
