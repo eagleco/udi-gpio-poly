@@ -40,7 +40,7 @@ class Controller(polyinterface.Controller):
         GPIO.cleanup()
 
     def shortPoll(self):
-        LOGGER.debug('short polling')
+        #LOGGER.debug('short polling')
         for node in self.nodes:
             self.nodes[node].updateInfo()
 
