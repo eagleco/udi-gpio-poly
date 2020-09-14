@@ -18,9 +18,9 @@
         <range uom="42" min="50" max="1000" step="50" />
     </editor>
     <editor id="TEMPF">
-        <range uom="17" />
+        <range uom="17" min="-67" max="257" step="1"/>
     </editor>
     <editor id="TEMPC">
-        <range uom="4" />
+        <range uom="4" min="-55" max="125" step="1"/>
     </editor>
 </editors>
