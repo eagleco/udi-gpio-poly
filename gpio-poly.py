@@ -4,6 +4,7 @@ import polyinterface
 import sys, os
 import RPi.GPIO as GPIO
 import glob #for finding temp sensors
+import time
 #import signal
 
 # These are physical PIN number
@@ -92,7 +93,7 @@ class Controller(polyinterface.Controller):
 
         if '1W_PIN' in self.polyConfig['customParams']:
             self.w1pin = self.polyConfig['customParams']['1W_PIN']
-            LOGGER.debug('Found 1 wire parameter, using pin ' + str(self.w1pin))
+            LOGGER.info('Found 1 wire parameter, using pin ' + str(self.w1pin))
 
 
     id = 'GPIO_HDR'
@@ -324,6 +325,8 @@ class OneWireTemp(polyinterface.Node):
         self.degF = 0
         self.degC = 0
         self.deadband = 0.25
+        self.maxinterval = 15*60 #update driver value periodically even if deadband not exceeded
+        self.lastupdate = 0
 
     def start(self):
         self.updateInfo()
@@ -336,7 +339,7 @@ class OneWireTemp(polyinterface.Node):
                 time.sleep(.2)
                 lines = f.readlines()
         if lines[0].strip()[-3:] != 'YES':
-            LOGGER.debug('temperature read failure {}'.format(lines[0]))
+            LOGGER.warning('temperature read failure {}'.format(lines[0]))
             self.setDriver('ST',0)
         else:
             equals_pos = lines[1].find('t=')
@@ -345,13 +348,14 @@ class OneWireTemp(polyinterface.Node):
                 temp_string = lines[1][equals_pos+2:]
                 temp_c = float(temp_string) / 1000.0
                 temp_f = temp_c * 1.8 + 32
-                if(abs(temp_f - self.degF) > self.deadband):
+                if(abs(temp_f - self.degF) > self.deadband or time.time() > self.lastupdate+self.maxinterval ):
                     self.degF = round(temp_f,1)
                     self.degC = round(temp_c,1)
                     self.setDriver('GV0',self.degF)
                     self.setDriver('GV1',self.degC)
+                    self.lastupdate = time.time()
             else:
-                LOGGER.debug('temperature read failure {}'.format(lines[1]))
+                LOGGER.warning('temperature read failure {}'.format(lines[1]))
 
     def query(self, command=None):
         self.updateInfo()
